@@ -24,23 +24,22 @@ s3resource = boto3.resource('s3',
                         )
 
 def list_files_in_user_bucket():
-    logging.debug("fetching objects in user s3 bucket")
+    #logging.debug("fetching objects in user s3 bucket")
     my_bucket = s3resource.Bucket(aws_s3_bucket)
-    logging.info("Printing Files in User bucket")
+    logging.info("Printing files from user S3 bucket")
     for file in my_bucket.objects.all():
         print(file.key)
 
 def list_files_in_noaa_bucket():
-    logging.debug("fetching objects in NOAA s3 bucket")
-    #paginator = s3client.get_paginator('list_objects_v2')
+    #logging.debug("fetching objects in NOAA s3 bucket")
     prefix = 'ABI-L1b-RadC/2022/209/00/' #replace this with user input with / in end
     noaa_bucket = s3resource.Bucket(noaa_public_bucket)
-    logging.info("Printing Files in NOAA bucket")
+    logging.info("Printing files from NOAA S3 bucket")
     for objects in noaa_bucket.objects.filter(Prefix=prefix):
         print(objects.key)
 
 def copy_file_to_user_bucket():
-    logging.info("copying file to local s3 bucket")
+    logging.info("Copying selected file to local S3 bucket")
     #file_key = prefix + filename 
     my_bucket = s3resource.Bucket(aws_s3_bucket)
     destination_bucket = s3resource.Bucket(aws_s3_bucket)
@@ -56,15 +55,12 @@ def copy_file_to_user_bucket():
         'Key': 'ABI-L1b-RadC/2022/209/00/OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
     }
     destination_bucket.copy(copy_source, destination_key)
-    logging.info("Printing Files in User bucket")
     url_to_noaa = 'https://noaa-goes18.s3.amazonaws.com/ABI-L1b-RadC/' + '2022/209/00/' + 'OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
     #print('URL to object on local S3: ', url_to_mys3)
     print('URL to object on NOAA S3: ', url_to_noaa)
     print('URL to object on local S3: ', url_to_mys3)
 
 def main():
-    #print('hello')
-    #return
     list_files_in_user_bucket()
     list_files_in_noaa_bucket()
     copy_file_to_user_bucket()
