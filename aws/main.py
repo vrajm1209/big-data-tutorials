@@ -30,7 +30,7 @@ def list_files_in_user_bucket():
     for file in my_bucket.objects.all():
         print(file.key)
 
-def list_files_in_noaa_bucket():
+def list_files_in_goes18_bucket():
     #logging.debug("fetching objects in NOAA s3 bucket")
     prefix = 'ABI-L1b-RadC/2022/209/00/' #replace this with user input with / in end
     noaa_bucket = s3resource.Bucket(noaa_public_bucket)
@@ -43,8 +43,9 @@ def copy_file_to_user_bucket():
     #file_key = prefix + filename 
     my_bucket = s3resource.Bucket(aws_s3_bucket)
     destination_bucket = s3resource.Bucket(aws_s3_bucket)
-    destination_key = 'copied/OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
-    url_to_mys3 = 'https://damg7245-tutorial.s3.amazonaws.com/' + destination_key
+    dest = "goes18/"
+    destination_key = dest + 'OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
+    url_to_mys3 = 'https://sevir-bucket-01.s3.amazonaws.com/' + destination_key
     for file in my_bucket.objects.all():
         if(file.key == destination_key):
             print('Can not copy duplicate')
@@ -62,9 +63,8 @@ def copy_file_to_user_bucket():
 
 def main():
     list_files_in_user_bucket()
-    list_files_in_noaa_bucket()
+    list_files_in_goes18_bucket()
     copy_file_to_user_bucket()
-
 
 if __name__ == "__main__":
     logging.info("Script starts")
