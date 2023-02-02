@@ -5,6 +5,8 @@ import os
 import logging
 from dotenv import load_dotenv
 import plotly.graph_objects as go
+
+#load env variables and change logging level to info
 load_dotenv()
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 logging.basicConfig(

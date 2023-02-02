@@ -21,43 +21,42 @@ s3client = boto3.client('s3',
                         )
 
 #intialise dictionary to store scrapped data before moving it to a sqllite table
-scrapped_goes18_dict = {
+scrapped_nexrad_dict = {
     'id': [],
-    'product': [],
     'year': [],
+    'month': [],
     'day': [],
-    'hour': []
+    'ground_station': []
 }
 
-def scrape_goes18_data():
+def scrape_nexrad_data():
     id=1    #for storing as primary key in db
-    logging.debug("Scrapping data from GOES18 bucket")
-    prefix = "ABI-L1b-RadC/"    #replace this with user input from streamlit UI with / in end
-    result = s3client.list_objects(Bucket=os.environ.get('GOES18_BUCKET_NAME'), Prefix=prefix, Delimiter='/')
+    logging.debug("Scrapping data from NEXRAD bucket")
+    prefix = "2023/"    #replace this with user input from streamlit UI with / in end
+    result = s3client.list_objects(Bucket=os.environ.get('NEXRAD_BUCKET_NAME'), Prefix=prefix, Delimiter='/')
     #travesing into each subfolder and store the folder names within each
     for o in result.get('CommonPrefixes'):
         path = o.get('Prefix').split('/')
         prefix_2 = prefix + path[-2] + "/"
-        sub_folder = s3client.list_objects(Bucket=os.environ.get('GOES18_BUCKET_NAME'), Prefix=prefix_2, Delimiter='/')
+        sub_folder = s3client.list_objects(Bucket=os.environ.get('NEXRAD_BUCKET_NAME'), Prefix=prefix_2, Delimiter='/')
         for p in sub_folder.get('CommonPrefixes'):
             sub_path = p.get('Prefix').split('/')
             prefix_3 = prefix_2 + sub_path[-2] + "/"
-            sub_sub_folder = s3client.list_objects(Bucket=os.environ.get('GOES18_BUCKET_NAME'), Prefix=prefix_3, Delimiter='/')
+            sub_sub_folder = s3client.list_objects(Bucket=os.environ.get('NEXRAD_BUCKET_NAME'), Prefix=prefix_3, Delimiter='/')
             for q in sub_sub_folder.get('CommonPrefixes'):
                 sub_sub_path = q.get('Prefix').split('/')
-                sub_sub_path = sub_sub_path[:-1]
-                scrapped_goes18_dict['id'].append(id)   #map all scrapped data into the dict
-                scrapped_goes18_dict['product'].append(sub_sub_path[0])
-                scrapped_goes18_dict['year'].append(int(sub_sub_path[1]))
-                scrapped_goes18_dict['day'].append(int(sub_sub_path[2]))
-                scrapped_goes18_dict['hour'].append(int(sub_sub_path[3]))
+                scrapped_nexrad_dict['id'].append(id)   #map all scrapped data into the dict
+                scrapped_nexrad_dict['year'].append(int(sub_sub_path[0]))
+                scrapped_nexrad_dict['month'].append(int(sub_sub_path[1]))
+                scrapped_nexrad_dict['day'].append(int(sub_sub_path[2]))
+                scrapped_nexrad_dict['ground_station'].append(sub_sub_path[3])
                 id+=1
 
-    logging.debug("Data scrapped successfully")       
-    scrapped_goes18_df = pd.DataFrame(scrapped_goes18_dict) #final scrapped metadata stored in dataframe
+    logging.debug("Data scrapped successfully")        
+    scrapped_nexrad_df = pd.DataFrame(scrapped_nexrad_dict) #final scrapped metadata stored in dataframe
 
 def main():
-    scrape_goes18_data()
+    scrape_nexrad_data()
 
 if __name__ == "__main__":
     logging.info("Script starts")
