@@ -42,7 +42,7 @@ def copy_file_to_user_bucket():
     url_to_mys3 = 'https://sevir-bucket-01.s3.amazonaws.com/' + destination_key
     for file in destination_bucket.objects.all():
         if(file.key == destination_key):
-            print('Sorry! Can not copy a file that is already present')
+            print('Sorry! Cannot copy a file that is already present')
             print('URL to already existing file on local S3 bucker: ', url_to_mys3)
             logging.info("Exited due to existing duplicate")
             return
