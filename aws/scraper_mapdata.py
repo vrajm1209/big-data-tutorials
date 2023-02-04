@@ -5,6 +5,7 @@ import os
 import logging
 from dotenv import load_dotenv
 import plotly.graph_objects as go
+import pandas as pd
 
 #load env variables and change logging level to info
 load_dotenv()
@@ -19,6 +20,7 @@ logging.basicConfig(
 url = "https://www.ncei.noaa.gov/access/homr/file/nexrad-stations.txt"
 #recording the response from the webpage
 response = requests.get(url)
+
 #initialise containers for relevant data
 nexrad=[]
 satellite_metadata = {
@@ -64,6 +66,7 @@ for satellite in nexrad:
 hover_text = []
 for j in range(len(satellite_metadata['county'])):
     hover_text.append(satellite_metadata['county'][j] + ", " + satellite_metadata['state'][j])
+
 #use plotly to plot
 fig = go.Figure(data=go.Scattergeo(
         lon = satellite_metadata['longitude'],
@@ -83,6 +86,7 @@ fig = go.Figure(data=go.Scattergeo(
             }
         }
     ))
+
 fig.update_layout(
         title = 'All NEXRAD satellite locations along with their elevations',
         geo_scope='usa',

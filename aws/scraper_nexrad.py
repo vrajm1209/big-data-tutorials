@@ -46,9 +46,9 @@ def scrape_nexrad_data():
             for q in sub_sub_folder.get('CommonPrefixes'):
                 sub_sub_path = q.get('Prefix').split('/')
                 scrapped_nexrad_dict['id'].append(id)   #map all scrapped data into the dict
-                scrapped_nexrad_dict['year'].append(int(sub_sub_path[0]))
-                scrapped_nexrad_dict['month'].append(int(sub_sub_path[1]))
-                scrapped_nexrad_dict['day'].append(int(sub_sub_path[2]))
+                scrapped_nexrad_dict['year'].append(sub_sub_path[0])
+                scrapped_nexrad_dict['month'].append(sub_sub_path[1])
+                scrapped_nexrad_dict['day'].append(sub_sub_path[2])
                 scrapped_nexrad_dict['ground_station'].append(sub_sub_path[3])
                 id+=1
 

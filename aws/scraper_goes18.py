@@ -48,9 +48,9 @@ def scrape_goes18_data():
                 sub_sub_path = sub_sub_path[:-1]
                 scrapped_goes18_dict['id'].append(id)   #map all scrapped data into the dict
                 scrapped_goes18_dict['product'].append(sub_sub_path[0])
-                scrapped_goes18_dict['year'].append(int(sub_sub_path[1]))
-                scrapped_goes18_dict['day'].append(int(sub_sub_path[2]))
-                scrapped_goes18_dict['hour'].append(int(sub_sub_path[3]))
+                scrapped_goes18_dict['year'].append(sub_sub_path[1])
+                scrapped_goes18_dict['day'].append(sub_sub_path[2])
+                scrapped_goes18_dict['hour'].append(sub_sub_path[3])
                 id+=1
 
     logging.debug("Data scrapped successfully")       
