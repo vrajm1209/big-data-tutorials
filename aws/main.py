@@ -40,10 +40,9 @@ def list_files_in_goes18_bucket():
         file_path = file_path.split('/')
         print(file_path[-1])
 
-    selected_file_name = 'OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
-    #selected_file_name = 'OR_ABI-L1b-RadC-M6C01_G18_s20222090011140_e20222090013513_c20222090013556.nc'
+    #selected_file_name = 'OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc'
+    selected_file_name = 'OR_ABI-L1b-RadC-M6C01_G18_s20222090011140_e20222090013513_c20222090013556.nc'
     all_selections_string = prefix+selected_file_name
-    #print('Selected values with file name: ', all_selections_string)
     return all_selections_string, selected_file_name
 
 def list_files_in_nexrad_bucket():
@@ -61,16 +60,15 @@ def list_files_in_nexrad_bucket():
         file_path = file_path.split('/')
         print(file_path[-1])
 
-    selected_file_name = 'KABR20230101_005634_V06_MDM'
-    #selected_file_name = 'KABR20230101_000142_V06'
+    #selected_file_name = 'KABR20230101_005634_V06_MDM'
+    selected_file_name = 'KABR20230101_000142_V06'
     all_selections_string = prefix+selected_file_name
-    #print('Selected values with file name: ', all_selections_string)
     return all_selections_string, selected_file_name
 
 def copy_file_to_user_bucket(all_selections_string, selected_file_name):
     logging.info("Attempting to copy selected file to local S3 bucket")
     destination_bucket = s3resource.Bucket(os.environ.get('USER_BUCKET_NAME'))  #define the destination bucket as the user bucker
-    select_satellite = 'nexrad' #replace this with user input from streamlit UI
+    select_satellite = 'goes18' #replace this with user input from streamlit UI
     
     if(select_satellite == 'goes18'):   #goes18 satellite filename intializing
         destination_folder = 'goes18/'
@@ -99,12 +97,12 @@ def copy_file_to_user_bucket(all_selections_string, selected_file_name):
             print(url_to_mys3)
             print('For reference, here is a link to the original file source: ', url_to_noaa)
             logging.warning("Exited as file already exists at destination bucket")
-            logging.info("Displaying download link for already existing file")
+            logging.info("Displaying download link for already existing file %s with selections %s", selected_file_name, all_selections_string)
             return url_to_mys3, url_to_noaa
 
     destination_bucket.copy(copy_source, destination_key)   #copy file to destination bucket
     logging.info("File copied to S3 bucket successfully")
-    logging.info("Displaying download link")
+    logging.info("Download requested for file selections: %s & file name: %s", all_selections_string, selected_file_name)
     print('DOWNLOAD file: ')
     print(url_to_mys3)
     print('For reference, here is a link to the original file source: ', url_to_noaa)
@@ -112,10 +110,10 @@ def copy_file_to_user_bucket(all_selections_string, selected_file_name):
 
 def main():
     #list_files_in_user_bucket()
-    nexrad_selections_string, nexrad_selected_file_name = list_files_in_nexrad_bucket()
-    url_to_mys3, url_to_noaa = copy_file_to_user_bucket(nexrad_selections_string, nexrad_selected_file_name)
-    #goes18_selections_string, goes18_selected_file_name = list_files_in_goes18_bucket()
-    #url_to_mys3, url_to_noaa = copy_file_to_user_bucket(goes18_selections_string, goes18_selected_file_name)
+    #nexrad_selections_string, nexrad_selected_file_name = list_files_in_nexrad_bucket()
+    #url_to_mys3, url_to_noaa = copy_file_to_user_bucket(nexrad_selections_string, nexrad_selected_file_name)
+    goes18_selections_string, goes18_selected_file_name = list_files_in_goes18_bucket()
+    url_to_mys3, url_to_noaa = copy_file_to_user_bucket(goes18_selections_string, goes18_selected_file_name)
 
 if __name__ == "__main__":
     logging.info("Main S3 bucket download/copy script starts")

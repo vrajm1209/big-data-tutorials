@@ -42,6 +42,7 @@ def generate_goes_url(file_name):
         
         #else provide URL
         logging.info("Successfully found URL for given file name for GOES18")
+        logging.info("Filename requested for download: %s", file_name)
         return final_url
 
     else:   #in case the filename format provided by user is wrong
@@ -65,6 +66,7 @@ def generate_nexrad_url(file_name):
         
         #else provide URL
         logging.info("Successfully found URL for given file name for NEXRAD")
+        logging.info("Filename requested for download: %s", file_name)
         return final_url
 
     else:   #in case the filename format provided by user is wrong
@@ -73,10 +75,10 @@ def generate_nexrad_url(file_name):
         raise SystemExit()
 
 def main():
-    #generated_goes_url = generate_goes_url(goes_file_name2)
-    #print(generated_goes_url)
-    generated_nexrad_url = generate_nexrad_url(nexrad_file_name3)
-    print(generated_nexrad_url)
+    generated_goes_url = generate_goes_url(goes_file_name)
+    print(generated_goes_url)
+    #generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
+    #print(generated_nexrad_url)
 
 if __name__ == "__main__":
     logging.info("Filename to URL script starts")
