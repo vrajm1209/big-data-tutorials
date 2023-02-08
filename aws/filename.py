@@ -1,11 +1,9 @@
 import os
-from dotenv import load_dotenv
 import logging
 import re
 import requests
 
-#load env variables and change logging level to info
-load_dotenv()
+#change logging level to info
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -16,9 +14,9 @@ logging.basicConfig(
 goes_file_name = "OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc"
 goes_file_name2 = "OR_ABI-L2-DMWVM-M6C08_G18_s20223552050271_e20223552050328_c20223552122197.nc"
 goes_file_name3 = "OR_ABI-L2-ACMC-M6_G18_s20222800931164_e20222800933537_c202228009345744.nc"
-nexrad_file_name = "KLWX19931112_005128.gz"
-nexrad_file_name2 = "FOP120230101_005524_V06_MDM.gz"
-nexrad_file_name3 = "KBOX20030717_014733332.gz"
+nexrad_file_name = "KLWX19931112_005128"
+nexrad_file_name2 = "FOP120230101_005524_V06_MDM"
+nexrad_file_name3 = "KBOX20030717_014733.gz"
  
 def generate_goes_url(file_name):
     input_url = "https://noaa-goes18.s3.amazonaws.com/"
@@ -36,19 +34,21 @@ def generate_goes_url(file_name):
         final_url = input_url+"-".join(sublist[0:3])+"/"+sublist_date[1:5]+"/"+sublist_date[5:8]+"/"+sublist_date[8:10]+"/"+file_name
         response = requests.get(final_url)
         if(response.status_code == 404):    #if format is correct but no such file exists
-            logging.error("Exited due no such file exists error for GOES18")
-            print("Sorry! No such file exists.")
-            raise SystemExit()
-        
+            logging.error("No such file exists at GOES18 location")
+            #print("Sorry! No such file exists.")
+            #raise SystemExit()
+            return -1
+
         #else provide URL
         logging.info("Successfully found URL for given file name for GOES18")
         logging.info("Filename requested for download: %s", file_name)
         return final_url
 
     else:   #in case the filename format provided by user is wrong
-        logging.error("Exited due to invalid filename format for GOES18")
-        print("Invalid filename format, please follow format for GOES18 files!")
-        raise SystemExit()
+        logging.error("Invalid filename format for GOES18")
+        #print("Invalid filename format, please follow format for GOES18 files!")
+        #raise SystemExit()
+        return 1
         
 def generate_nexrad_url(file_name):
     input_url = "https://noaa-nexrad-level2.s3.amazonaws.com/"
@@ -60,9 +60,10 @@ def generate_nexrad_url(file_name):
         final_url = input_url+file_name[4:8]+"/"+file_name[8:10]+"/"+file_name[10:12]+"/"+file_name[:4]+"/"+file_name
         response = requests.get(final_url)
         if(response.status_code == 404):    #if format is correct but no such file exists
-            logging.error("Exited due no such file exists error for NEXRAD")
-            print("Sorry! No such file exists.")
-            raise SystemExit()
+            logging.error("No such file exists at NEXRAD location")
+            #print("Sorry! No such file exists.")
+            #raise SystemExit()
+            return -1
         
         #else provide URL
         logging.info("Successfully found URL for given file name for NEXRAD")
@@ -70,15 +71,16 @@ def generate_nexrad_url(file_name):
         return final_url
 
     else:   #in case the filename format provided by user is wrong
-        logging.error("Exited due to invalid filename format for NEXRAD")
-        print("Invalid filename format, please follow format for NEXRAD level 2 files!")
-        raise SystemExit()
+        logging.error("Invalid filename format for NEXRAD")
+        #print("Invalid filename format, please follow format for NEXRAD level 2 files!")
+        #raise SystemExit()
+        return 1
 
 def main():
-    generated_goes_url = generate_goes_url(goes_file_name)
-    print(generated_goes_url)
-    #generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
-    #print(generated_nexrad_url)
+    #generated_goes_url = generate_goes_url(goes_file_name)
+    #print(generated_goes_url)
+    generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
+    print(generated_nexrad_url)
 
 if __name__ == "__main__":
     logging.info("Filename to URL script starts")

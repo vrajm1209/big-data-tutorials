@@ -1,14 +1,10 @@
 import requests
-import boto3
 import re
 import os
 import logging
-from dotenv import load_dotenv
 import plotly.graph_objects as go
-import pandas as pd
 
-#load env variables and change logging level to info
-load_dotenv()
+#change logging level to info
 LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -20,11 +16,12 @@ def scrape_nexrad_locations():
     #initialise containers for relevant data
     nexrad=[]
     satellite_metadata = {
-            'state': [],
-            'county': [],
-            'latitude': [],
-            'longitude': [],
-            'elevation': []
+        'ground_station': [],
+        'state': [],
+        'county': [],
+        'latitude': [],
+        'longitude': [],
+        'elevation': []
     }
     #url used to scrape NEXRAD satellite location data to plot on map
     url = "https://www.ncei.noaa.gov/access/homr/file/nexrad-stations.txt"
@@ -58,6 +55,9 @@ def scrape_nexrad_locations():
     for satellite in nexrad:
         satellite = satellite.split("  ")
         satellite =  [i.strip() for i in satellite if i != ""]
+        #print(satellite)
+        satellite_metadata['ground_station'].append(satellite[0].split(" ")[1])
+        #print(satellite_metadata['ground_station'])
         for i in range(len(satellite)):
             if (re.match(r'\b[A-Z][A-Z]\b',satellite[i].strip())):      #use regex to match with the state field containing 2 capital letters
                 satellite_metadata['state'].append(satellite[i][:2])    #append state field to final dict
@@ -76,8 +76,6 @@ def scrape_nexrad_locations():
                 break
 
     logging.info("Successfully scrapped NEXRAD statellite location data")
-    sat = pd.DataFrame(satellite_metadata)
-    print(sat)
     return satellite_metadata   #this dict has the final scraped data
 
 def plot_nexrad_locations():
@@ -86,7 +84,7 @@ def plot_nexrad_locations():
     #plotting the coordinates extracted on a map
     hover_text = []
     for j in range(len(satellite_metadata['county'])):      #building the text to display when hovering over each point on the plot
-        hover_text.append(satellite_metadata['county'][j] + ", " + satellite_metadata['state'][j])
+        hover_text.append("Station: " + satellite_metadata['ground_station'][j] + " County:" + satellite_metadata['county'][j] + ", " + satellite_metadata['state'][j])
 
     #use plotly to plot
     fig = go.Figure(data=go.Scattergeo(

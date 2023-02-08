@@ -55,6 +55,7 @@ def scrape_goes18_data():
 
     logging.info("Data scrapped successfully")       
     scrapped_goes18_df = pd.DataFrame(scrapped_goes18_dict) #final scrapped metadata stored in dataframe
+    #print(scrapped_goes18_df.loc[scrapped_goes18_df['year']=="-"]['day'].unique())
     return scrapped_goes18_df
 
 def main():
