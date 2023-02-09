@@ -1,23 +1,24 @@
 import os
 import boto3
-import logging
-from dotenv import load_dotenv
+import time
 import pandas as pd
+from dotenv import load_dotenv
 
 #load env variables and change logging level to info
 load_dotenv()
-LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=LOGLEVEL,
-    datefmt='%Y-%m-%d %H:%M:%S',
-    filename='logs.log')
 
 #authenticate S3 client with your user credentials that are stored in your .env config file
 s3client = boto3.client('s3',
                         region_name='us-east-1',
                         aws_access_key_id = os.environ.get('AWS_ACCESS_KEY'),
                         aws_secret_access_key = os.environ.get('AWS_SECRET_KEY')
+                        )
+
+#authenticate S3 client for logging with your user credentials that are stored in your .env config file
+clientLogs = boto3.client('logs',
+                        region_name='us-east-1',
+                        aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
+                        aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
                         )
 
 #intialise dictionary to store scrapped data before moving it to a sqllite table
@@ -30,10 +31,21 @@ scrapped_goes18_dict = {
 }
 
 def scrape_goes18_data():
+    clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+        logGroupName = "assignment01-logs",
+        logStreamName = "db-logs",
+        logEvents = [
+            {
+            'timestamp' : int(time.time() * 1e3),
+            'message' : "Scrapping data from GOES18 bucket"
+            }
+        ]
+    )
+
     id=1    #for storing as primary key in db
-    logging.info("Scrapping data from GOES18 bucket")
-    prefix = "ABI-L1b-RadC/"    #replace this with user input from streamlit UI with / in end
+    prefix = "ABI-L1b-RadC/"    #just one product to consider as per scope of assignment
     result = s3client.list_objects(Bucket=os.environ.get('GOES18_BUCKET_NAME'), Prefix=prefix, Delimiter='/')
+
     #traversing into each subfolder and store the folder names within each
     for o in result.get('CommonPrefixes'):
         path = o.get('Prefix').split('/')
@@ -53,15 +65,22 @@ def scrape_goes18_data():
                 scrapped_goes18_dict['hour'].append(sub_sub_path[3])
                 id+=1
 
-    logging.info("Data scrapped successfully")       
-    scrapped_goes18_df = pd.DataFrame(scrapped_goes18_dict) #final scrapped metadata stored in dataframe
-    #print(scrapped_goes18_df.loc[scrapped_goes18_df['year']=="-"]['day'].unique())
+    clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+        logGroupName = "assignment01-logs",
+        logStreamName = "db-logs",
+        logEvents = [
+            {
+            'timestamp' : int(time.time() * 1e3),
+            'message' : "Data scrapped successfully"
+            }
+        ]
+    )
+      
+    scrapped_goes18_df = pd.DataFrame(scrapped_goes18_dict)     #final scrapped metadata stored in dataframe
     return scrapped_goes18_df
 
 def main():
     metadata_goes18 = scrape_goes18_data()
 
 if __name__ == "__main__":
-    logging.info("GOES18 scraper script starts")
     main()
-    logging.info("GOES18 scraper script ends")

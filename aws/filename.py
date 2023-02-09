@@ -1,15 +1,19 @@
 import os
-import logging
+import boto3
 import re
 import requests
+import time
+from dotenv import load_dotenv
 
-#change logging level to info
-LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=LOGLEVEL,
-    datefmt='%Y-%m-%d %H:%M:%S',
-    filename='logs.log')
+#load env variables and change logging level to info
+load_dotenv()
+
+#authenticate S3 client for logging with your user credentials that are stored in your .env config file
+clientLogs = boto3.client('logs',
+                        region_name='us-east-1',
+                        aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
+                        aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
+                        )
 
 goes_file_name = "OR_ABI-L1b-RadC-M6C01_G18_s20222090001140_e20222090003513_c20222090003553.nc"
 goes_file_name2 = "OR_ABI-L2-DMWVM-M6C08_G18_s20223552050271_e20223552050328_c20223552122197.nc"
@@ -34,20 +38,42 @@ def generate_goes_url(file_name):
         final_url = input_url+"-".join(sublist[0:3])+"/"+sublist_date[1:5]+"/"+sublist_date[5:8]+"/"+sublist_date[8:10]+"/"+file_name
         response = requests.get(final_url)
         if(response.status_code == 404):    #if format is correct but no such file exists
-            logging.error("No such file exists at GOES18 location")
-            #print("Sorry! No such file exists.")
-            #raise SystemExit()
+            clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+                logGroupName = "assignment01-logs",
+                logStreamName = "user-input-logs",
+                logEvents = [
+                    {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "No such file exists at GOES18 location"
+                    }
+                ]
+            )
             return -1
 
         #else provide URL
-        logging.info("Successfully found URL for given file name for GOES18")
-        logging.info("Filename requested for download: %s", file_name)
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "user-input-logs",
+            logEvents = [
+                {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "Successfully found URL for given file name for GOES18 \nFilename requested for download: " + file_name
+                }
+            ]
+        )
         return final_url
 
     else:   #in case the filename format provided by user is wrong
-        logging.error("Invalid filename format for GOES18")
-        #print("Invalid filename format, please follow format for GOES18 files!")
-        #raise SystemExit()
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "user-input-logs",
+            logEvents = [
+                {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "Invalid filename format for GOES18"
+                }
+            ]
+        )
         return 1
         
 def generate_nexrad_url(file_name):
@@ -60,29 +86,49 @@ def generate_nexrad_url(file_name):
         final_url = input_url+file_name[4:8]+"/"+file_name[8:10]+"/"+file_name[10:12]+"/"+file_name[:4]+"/"+file_name
         response = requests.get(final_url)
         if(response.status_code == 404):    #if format is correct but no such file exists
-            logging.error("No such file exists at NEXRAD location")
-            #print("Sorry! No such file exists.")
-            #raise SystemExit()
+            clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+                logGroupName = "assignment01-logs",
+                logStreamName = "user-input-logs",
+                logEvents = [
+                    {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "No such file exists at NEXRAD location"
+                    }
+                ]
+            )
             return -1
         
         #else provide URL
-        logging.info("Successfully found URL for given file name for NEXRAD")
-        logging.info("Filename requested for download: %s", file_name)
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "user-input-logs",
+            logEvents = [
+                {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "Successfully found URL for given file name for NEXRAD \nFilename requested for download: " + file_name
+                }
+            ]
+        )
         return final_url
 
     else:   #in case the filename format provided by user is wrong
-        logging.error("Invalid filename format for NEXRAD")
-        #print("Invalid filename format, please follow format for NEXRAD level 2 files!")
-        #raise SystemExit()
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "user-input-logs",
+            logEvents = [
+                {
+                    'timestamp' : int(time.time() * 1e3),
+                    'message' : "Invalid filename format for NEXRAD"
+                }
+            ]
+        )
         return 1
 
 def main():
-    #generated_goes_url = generate_goes_url(goes_file_name)
-    #print(generated_goes_url)
-    generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
-    print(generated_nexrad_url)
+    generated_goes_url = generate_goes_url(goes_file_name)
+    print(generated_goes_url)
+    #generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
+    #print(generated_nexrad_url)
 
 if __name__ == "__main__":
-    logging.info("Filename to URL script starts")
     main()
-    logging.info("Filename to URL script ends")

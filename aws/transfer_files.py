@@ -18,6 +18,12 @@ s3resource = boto3.resource('s3',
                         aws_access_key_id = os.environ.get('AWS_ACCESS_KEY'),
                         aws_secret_access_key = os.environ.get('AWS_SECRET_KEY')
                         )
+#authenticate S3 client for logging with your user credentials that are stored in your .env config file
+clientLogs = boto3.client('logs',
+                        region_name='us-east-1',
+                        aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
+                        aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
+                        )
 
 def list_files_in_goes18_bucket(user_product, user_year, user_day, user_hour):
     #logging.debug("fetching objects in NOAA s3 bucket")
@@ -133,20 +139,5 @@ def copy_goes_file_to_user_bucket(selected_file_name, user_product, user_year, u
     destination_bucket.copy(copy_source, destination_key)   #copy file to destination bucket
     logging.info("File copied to S3 bucket successfully")
     logging.info("Download requested for file selections: %s & file name: %s", all_selections_string, selected_file_name)
-    #print('DOWNLOAD file: ')
-    #print(url_to_mys3)
-    #print('For reference, here is a link to the original file source: ', url_to_goes)
+
     return url_to_mys3
-
-#def main():
-    #list_files_in_user_bucket()
-    #nexrad_selections_string, nexrad_selected_file_name = list_files_in_nexrad_bucket()
-    #url_to_mys3, url_to_noaa = copy_file_to_user_bucket(nexrad_selections_string, nexrad_selected_file_name)
-#    goes18_selections_string, goes18_selected_file_name = list_files_in_goes18_bucket()
-#    url_to_mys3, url_to_noaa = copy_file_to_user_bucket(goes18_selections_string, goes18_selected_file_name)
-#    list_files_in_goes18_bucket()
-
-#if __name__ == "__main__":
-#    logging.info("Main S3 bucket download/copy script starts")
-#    main()
-#    logging.info("Main S3 bucket download/copy script ends")
