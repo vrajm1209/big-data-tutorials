@@ -17,11 +17,13 @@ database_file_name = 'assignment1.db'
 database_file_path = os.path.join(os.path.dirname(__file__),database_file_name)
 print("File path", database_file_path)
 
-ddl_file_name = 'goes18.sql'
+ddl_file_name = 'mapdata.sql'
 ddl_file_path = os.path.join(os.path.dirname(__file__),ddl_file_name)
-#df = pd.read_csv("scrapped_goes18_df.csv")
-df = scrape_goes18_data()
-table_name = 'goes'
+#df = pd.read_csv("satellite_metadata.csv")
+diction = scrape_nexrad_locations()
+df = pd.DataFrame(diction)
+#print(df)
+table_name = 'mapdata'
 
 def create_database():
     with open(ddl_file_path, 'r') as sql_file:
@@ -44,7 +46,7 @@ def check_database_initilization():
 
 def query_into_dataframe():
     db = sqlite3.connect(database_file_path)
-    df1 = pd.read_sql_query("SELECT * FROM goes", db)
+    df1 = pd.read_sql_query("SELECT * FROM mapdata", db)
     print(df1)
     #logging.info(df1)
 

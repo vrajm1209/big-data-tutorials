@@ -2,7 +2,7 @@ import os
 import time
 import boto3
 from dotenv import load_dotenv
-from filename import generate_goes_url,generate_nexrad_url
+from url_from_filename import generate_goes_url, generate_nexrad_url
 
 #change logging level to info
 load_dotenv()
@@ -57,7 +57,7 @@ fileNEXRAD9 = "KAPX20120717_013219_V06.gz"
 fileNEXRAD10 = "KAPX20140907_010223_V06.gz"
 fileNEXRAD11 = "KCBW20080819_012424_V03.gz"
 fileNEXRAD12 = "KLWX19931112_005128.gz"
-fileNEXRAD13 = "KBOX20030717_014732.gz_005128.gz"
+fileNEXRAD13 = "KBOX20030717_014732.gz"
 
 
 #NEXRAD URLS (Example + Groups 1,2,3,4,5,7,8,9,10,11)
@@ -73,11 +73,13 @@ urlNEXRAD9 = "https://noaa-nexrad-level2.s3.amazonaws.com/2012/07/17/KAPX/KAPX20
 urlNEXRAD10 = "https://noaa-nexrad-level2.s3.amazonaws.com/2014/09/07/KAPX/KAPX20140907_010223_V06.gz"
 urlNEXRAD11 = "https://noaa-nexrad-level2.s3.amazonaws.com/2008/08/19/KCBW/KCBW20080819_012424_V03.gz"
 urlNEXRAD12 = "https://noaa-nexrad-level2.s3.amazonaws.com/1993/11/12/KLWX/KLWX19931112_005128.gz"
-urlNEXRAD13 = ""
+urlNEXRAD13 = "https://noaa-nexrad-level2.s3.amazonaws.com/2003/07/17/KBOX/KBOX20030717_014732.gz"
 
 #TESTING FUNCTIONS
 def test_gen_goes_url():
     
+    """Function to test generated URLs when filename is givn for NEXRAD"""
+
     assert generate_goes_url(fileGOES1) == urlGOES1
     assert generate_goes_url(fileGOES2) == urlGOES2
     assert generate_goes_url(fileGOES3) == urlGOES3
@@ -105,6 +107,8 @@ def test_gen_goes_url():
     
 def test_gen_nexrad_url():
     
+    """Function to test generated URLs when filename is givn for NEXRAD"""
+
     assert generate_nexrad_url(fileNEXRAD1) == urlNEXRAD1
     assert generate_nexrad_url(fileNEXRAD2) == urlNEXRAD2
     assert generate_nexrad_url(fileNEXRAD3) == urlNEXRAD3
@@ -117,7 +121,7 @@ def test_gen_nexrad_url():
     assert generate_nexrad_url(fileNEXRAD10) == urlNEXRAD10
     assert generate_nexrad_url(fileNEXRAD11) == urlNEXRAD11
     assert generate_nexrad_url(fileNEXRAD12) == urlNEXRAD12
-    #assert generate_nexrad_url(fileNEXRAD13) == urlNEXRAD13
+    assert generate_nexrad_url(fileNEXRAD13) == urlNEXRAD13
 
     clientLogs.put_log_events(      #logging to AWS CloudWatch logs
         logGroupName = "assignment01-logs",

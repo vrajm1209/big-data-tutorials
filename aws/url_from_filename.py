@@ -57,7 +57,7 @@ def generate_goes_url(file_name):
             logEvents = [
                 {
                     'timestamp' : int(time.time() * 1e3),
-                    'message' : "Successfully found URL for given file name for GOES18 \nFilename requested for download: " + file_name
+                    'message' : "Successfully found URL for given file name for GOES18; \nFilename requested for download: " + file_name
                 }
             ]
         )
@@ -123,12 +123,3 @@ def generate_nexrad_url(file_name):
             ]
         )
         return 1
-
-def main():
-    generated_goes_url = generate_goes_url(goes_file_name)
-    print(generated_goes_url)
-    #generated_nexrad_url = generate_nexrad_url(nexrad_file_name)
-    #print(generated_nexrad_url)
-
-if __name__ == "__main__":
-    main()

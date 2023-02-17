@@ -4,22 +4,29 @@ import re
 import os
 import time
 import plotly.graph_objects as go
-from dotenv import load_dotenv
-
-#load env variables and change logging level to info
-load_dotenv()
-
-#authenticate S3 client for logging with your user credentials that are stored in your .env config file
-clientLogs = boto3.client('logs',
-                        region_name='us-east-1',
-                        aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
-                        aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
-                        )
 
 def scrape_nexrad_locations():
+
+    """Function scrapes a .txt file found on the internet containg NEXRAD satellite station locations. It scrapes for
+    details like longitude, latitude, state, county, elevation and ground station ID for the satellites geoprapically located
+    in the USA. Initially, the function sets up a boto3 clients for accessing AWS CloudWatch to perform logging to a 
+    log group and log stream. Both these clients have their own AWS access & secret key generated from AWS with necessary permissions.
+    -----
+    Returns:
+    A dictionary containing path for all subfolders 
+    """
+
+    #authenticate S3 client for logging with your user credentials that are stored in your .env config file
+    clientLogs = boto3.client('logs',
+                            region_name='us-east-1',
+                            aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
+                            aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
+                            )
+
     #initialise containers for relevant data
     nexrad=[]
     satellite_metadata = {
+        'id': [],
         'ground_station': [],
         'state': [],
         'county': [],
@@ -27,6 +34,16 @@ def scrape_nexrad_locations():
         'longitude': [],
         'elevation': []
     }
+    clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+        logGroupName = "assignment01-logs",
+        logStreamName = "db-logs",
+        logEvents = [
+            {
+            'timestamp' : int(time.time() * 1e3),
+            'message' : "Scraping data for NEXRAD statellite locations"
+            }
+        ]
+    )
     #url used to scrape NEXRAD satellite location data to plot on map
     url = "https://www.ncei.noaa.gov/access/homr/file/nexrad-stations.txt"
 
@@ -34,16 +51,52 @@ def scrape_nexrad_locations():
         response = requests.get(url)    #recording the response from the webpage
         response.raise_for_status()
     except requests.exceptions.HTTPError as err_http:
-        #logging.error("Exited due to HTTP error while accessing URL")
-        raise SystemExit(err_http)                  ########change logic!!!
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "db-logs",
+            logEvents = [
+                {
+                'timestamp' : int(time.time() * 1e3),
+                'message' : "Exited due to HTTP error while accessing URL"
+                }
+            ]
+        )  
+        raise SystemExit(err_http)
     except requests.exceptions.ConnectionError as err_conn:
-        #logging.error("Exited due to connection error while accessing URL")
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "db-logs",
+            logEvents = [
+                {
+                'timestamp' : int(time.time() * 1e3),
+                'message' : "Exited due to connection error while accessing URL"
+                }
+            ]
+        )
         raise SystemExit(err_conn)
     except requests.exceptions.Timeout as err_to:
-        #logging.error("Exited due to timeout error while accessing URL")
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "db-logs",
+            logEvents = [
+                {
+                'timestamp' : int(time.time() * 1e3),
+                'message' : "Exited due to timeout error while accessing URL"
+                }
+            ]
+        )
         raise SystemExit(err_to)
     except requests.exceptions.RequestException as err_req:
-        #logging.fatal("Exited due to fatal error")
+        clientLogs.put_log_events(      #logging to AWS CloudWatch logs
+            logGroupName = "assignment01-logs",
+            logStreamName = "db-logs",
+            logEvents = [
+                {
+                'timestamp' : int(time.time() * 1e3),
+                'message' : "Exited due to fatal error"
+                }
+            ]
+        )
         raise SystemExit(err_req)
 
     #traverse extracted txt data line by line
@@ -56,9 +109,12 @@ def scrape_nexrad_locations():
     nexrad = [i for i in nexrad if 'UNITED STATES' in i]    #only consider satellites over USA
 
     #extracting state and county information 
+    id=0    #to store in database
     for satellite in nexrad:
+        id+=1
         satellite = satellite.split("  ")
         satellite =  [i.strip() for i in satellite if i != ""]
+        satellite_metadata['id'].append(id)
         satellite_metadata['ground_station'].append(satellite[0].split(" ")[1])
         for i in range(len(satellite)):
             if (re.match(r'\b[A-Z][A-Z]\b',satellite[i].strip())):      #use regex to match with the state field containing 2 capital letters
@@ -83,7 +139,7 @@ def scrape_nexrad_locations():
         logEvents = [
             {
             'timestamp' : int(time.time() * 1e3),
-            'message' : "Successfully scrapped NEXRAD statellite location data"
+            'message' : "Successfully scraped NEXRAD statellite location data"
             }
         ]
     )
@@ -91,6 +147,22 @@ def scrape_nexrad_locations():
     return satellite_metadata   #this dict has the final scraped data
 
 def plot_nexrad_locations():
+
+    """Function uses the output of the scrape_nexrad_locations() method to generate a geographical plot of the NEXRAD
+    satellite locations in the USA. Initially, the function sets up a boto3 clients for accessing AWS CloudWatch to perform logging to a 
+    log group and log stream. Both these clients have their own AWS access & secret key generated from AWS with necessary permissions.
+    -----
+    Returns:
+    A plotly figure containing a map of all NEXRAD satellite locations 
+    """
+
+    #authenticate S3 client for logging with your user credentials that are stored in your .env config file
+    clientLogs = boto3.client('logs',
+                            region_name='us-east-1',
+                            aws_access_key_id = os.environ.get('AWS_LOG_ACCESS_KEY'),
+                            aws_secret_access_key = os.environ.get('AWS_LOG_SECRET_KEY')
+                            )
+
     satellite_metadata = scrape_nexrad_locations()
     clientLogs.put_log_events(      #logging to AWS CloudWatch logs
         logGroupName = "assignment01-logs",
@@ -160,10 +232,4 @@ def plot_nexrad_locations():
         ]
     )
 
-    return fig
-
-def main():
-    map_plot = plot_nexrad_locations()
-
-if __name__ == "__main__":
-    main()
+    return fig  #return the figure/plot created
