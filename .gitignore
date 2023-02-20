@@ -131,3 +131,4 @@ dmypy.json
 # User defined
 aws/venv_aws
 docker-tutorial/venv_dock
+fastapi/.env_fast
